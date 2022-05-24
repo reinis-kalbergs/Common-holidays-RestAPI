@@ -5,8 +5,7 @@ import com.example.commonholidaysapi.model.HolidayResult;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.client.RestTemplate;
 
@@ -22,20 +21,21 @@ public class MainServiceTest {
     @InjectMocks
     MainService mainService;
 
+    @Captor
+    ArgumentCaptor<String> urlCaptor;
+
     @Test
     void shouldGetCorrectURL() {
         String countryCode1 = "UK";
         String countryCode2 = "lv";
         int year = 1999;
 
-        String result1 = mainService.getHolidaysUrl(countryCode1,year);
-        String result2 = mainService.getHolidaysUrl(countryCode2,year);
+        Mockito.when(restTemplate.getForObject(urlCaptor.capture(), Mockito.any() )).thenReturn(new Holiday[0]);
+        mainService.getCommonHolidays(countryCode1, countryCode2, year);
 
-        String expectedResult1 = "https://date.nager.at/api/v3/PublicHolidays/1999/GB";
-        String expectedResult2 = "https://date.nager.at/api/v3/PublicHolidays/1999/LV";
-
-        Assertions.assertEquals(result1,expectedResult1);
-        Assertions.assertEquals(result2,expectedResult2);
+        List<String> urlsCalled = urlCaptor.getAllValues();
+        Assertions.assertTrue(urlsCalled.contains("https://date.nager.at/api/v3/PublicHolidays/1999/GB"));
+        Assertions.assertTrue(urlsCalled.contains("https://date.nager.at/api/v3/PublicHolidays/1999/LV"));
     }
 
     @Test
@@ -58,20 +58,4 @@ public class MainServiceTest {
 
         Assertions.assertIterableEquals(result,expectedResult);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }

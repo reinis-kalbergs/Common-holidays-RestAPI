@@ -22,17 +22,19 @@ public class MainService {
 
     public List<HolidayResult> getCommonHolidays(String countryCode1, String countryCode2, Integer year) {
         try {
-            Holiday[] response1 = restTemplate
-                    .getForObject(getHolidaysUrl(countryCode1, year), Holiday[].class);
-            Holiday[] response2 = restTemplate
-                    .getForObject(getHolidaysUrl(countryCode2, year), Holiday[].class);
+            Holiday[] response1 = retrieveHolidays(countryCode1,year);
+            Holiday[] response2 = retrieveHolidays(countryCode2,year);
             return combineCommonHolidays(response1, response2);
         } catch (RestClientException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    String getHolidaysUrl(String countryCode, int year) {
+    private Holiday[] retrieveHolidays(String countryCode, Integer year){
+        return restTemplate.getForObject(getHolidaysUrl(countryCode, year), Holiday[].class);
+    }
+
+    private String getHolidaysUrl(String countryCode, int year) {
         final String PUBLIC_HOLIDAYS_URL = "https://date.nager.at/api/v3/PublicHolidays/";
         countryCode = formatCountryCode(countryCode);
         return PUBLIC_HOLIDAYS_URL + year + "/" + countryCode;
